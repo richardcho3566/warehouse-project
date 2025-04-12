@@ -2,7 +2,7 @@ import pandas as pd
 from inventory.models import Product
 
 # 엑셀 파일 경로
-file_path = 'products.xlsx'
+file_path = 'products.csv'
 
 # pandas를 사용하여 엑셀 파일 읽기
 df = pd.read_excel(file_path)
