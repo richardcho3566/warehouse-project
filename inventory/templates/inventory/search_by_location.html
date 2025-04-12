@@ -1,0 +1,49 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}위치코드로 검색{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">📍 위치코드로 제품 검색</h2>
+
+<form method="get" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="예: A-03-C3" value="{{ query|default:'' }}">
+        <button type="submit" class="btn btn-primary">검색</button>
+    </div>
+</form>
+<a href="{% url 'product_list' %}">← 돌아가기</a>
+
+{% if query %}
+    <h5>"{{ query }}" 검색 결과</h5>
+    {% if products %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>제품명</th>
+                        <th>위치코드</th>
+                        <th>삭제</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                        <tr>
+                            <td>{{ product.product_name }}</td>
+                            <td>{{ product.location_code }}</td>
+                            <td>
+                                <form method="post" action="{% url 'delete_product' product.pk %}?from=search&q={{ query }}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                                </form>                                                             
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                    
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">해당 위치코드에 일치하는 제품이 없습니다.</div>
+    {% endif %}
+{% endif %}
+{% endblock %}

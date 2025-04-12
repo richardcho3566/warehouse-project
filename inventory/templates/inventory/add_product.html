@@ -1,0 +1,54 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}제품 등록{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">📋 제품 등록</h2>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<form method="post" class="row g-3">
+    {% csrf_token %}
+    <div class="col-md-6">
+        <label class="form-label">제품명</label>
+        {{ form.product_name }}
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">창고 위치</label>
+        {{ form.warehouse }}
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">선반 번호</label>
+        {{ form.shelf_number }}
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">열(Column)</label>
+        {{ form.column }}
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">층(Level)</label>
+        {{ form.level }}
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-success">등록</button>
+        <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">목록 보기</a>
+    </div>
+</form>
+{% endblock %}
+{% if form.errors %}
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
