@@ -136,7 +136,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-ALLOWED_HOSTS = ['warehouse-project.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['warehouse-project-8wrh.onrender.com', 'localhost', '127.0.0.1']
 
 if os.getenv('RENDER'):
     import dj_database_url
