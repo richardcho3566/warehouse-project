@@ -79,9 +79,14 @@ WSGI_APPLICATION = 'warehouse_project.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://warehouse_project_user:JTUsUecOt3CFhi6OFYkSpyLLkHbkp4zS@dpg-cvsskkq4d50c73d83vpg-a/warehouse_project'
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+    }
 }
 
 
@@ -131,12 +136,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Render 환경일 때 자동으로 설정
+ALLOWED_HOSTS = ['warehouse-project.onrender.com', 'localhost', '127.0.0.1']
+
 if os.getenv('RENDER'):
     import dj_database_url
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
-
-    ALLOWED_HOSTS += ['warehouse-project.onrender.com']  # Render 앱 주소
 
     # 보안 관련 설정
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
