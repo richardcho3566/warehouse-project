@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'warehouse_project.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL')
+        default='postgresql://warehouse_project_user:JTUsUecOt3CFhi6OFYkSpyLLkHbkp4zS@dpg-cvsskkq4d50c73d83vpg-a/warehouse_project'
     )
 }
 
