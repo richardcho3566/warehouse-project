@@ -191,9 +191,13 @@ def update_grade(request, profile_id):
     return render(request, 'inventory/update_grade.html', {'form': form, 'profile': profile})
 
 
-def create_admin(request):
+ddef create_admin(request):
     if not User.objects.filter(username='admin').exists():
-        User.objects.create_superuser('admin', 'admin@example.com', 'admin1234')
-        return HttpResponse("✅ 슈퍼유저(admin) 생성 완료!")
+        User.objects.create_superuser(
+            username='master',
+            email='wbcho@joongwoo.co.kr',
+            password='aa236541'  # 원하면 다른 걸로 바꿔도 돼
+        )
+        return HttpResponse("✅ 슈퍼유저 'admin' 생성 완료!")
     else:
         return HttpResponse("ℹ️ 이미 admin 계정이 존재합니다.")
