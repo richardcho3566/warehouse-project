@@ -194,9 +194,9 @@ def update_grade(request, profile_id):
 def create_admin(request):
     if not User.objects.filter(username='admin').exists():
         User.objects.create_superuser(
-            username='master',
-            email='wbcho@joongwoo.co.kr',
-            password='aa236541'  # 원하면 다른 걸로 바꿔도 돼
+            username='admin',
+            email='admin@example.com',
+            password='admin1234'
         )
         return HttpResponse("✅ 슈퍼유저 'admin' 생성 완료!")
     else:
