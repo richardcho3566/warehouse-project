@@ -1,9 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Product
-from .forms import ProductForm
+from .forms import ProductForm, CSVUploadForm
 from django.contrib import messages
 from django.urls import reverse
 from django.views.decorators.http import require_POST
+import io
+import csv
+
+
+
 
 # views.py의 product_list 뷰 수정
 def product_list(request):
@@ -93,3 +98,26 @@ def search_by_location(request):
     })
 
 
+def upload_csv(request):
+    if request.method == 'POST':
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = request.FILES['file']
+            decoded_file = csv_file.read().decode('utf-8')
+            io_string = io.StringIO(decoded_file)
+            reader = csv.reader(io_string)
+            next(reader)  # 첫 줄 (헤더) 건너뛰기
+
+            for row in reader:
+                product_name, warehouse, shelf_number, column, level = row
+                Product.objects.create(
+                    product_name=str(product_name).strip(),
+                    warehouse=str(warehouse).strip(),
+                    shelf_number=str(shelf_number).strip().zfill(2),
+                    column=str(column).strip(),
+                    level=str(level).strip()
+                )
+            return redirect('product_list')
+    else:
+        form = CSVUploadForm()
+    return render(request, 'inventory/upload_csv.html', {'form': form})

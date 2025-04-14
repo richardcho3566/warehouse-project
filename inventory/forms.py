@@ -19,3 +19,6 @@ class ProductForm(forms.ModelForm):
         if re.search(r'[a-z]', name):
             raise forms.ValidationError("소문자는 입력할 수 없습니다.")
         return name
+
+class CSVUploadForm(forms.Form):
+    file = forms.FileField(label='CSV 파일 업로드')

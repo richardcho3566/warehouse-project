@@ -23,10 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-br0h0kd-83p6ipxi^s2_(_jo1_kf)1yrdvkbcjdg5&++t6yu!b'
+SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+
 
 ALLOWED_HOSTS = []
 
@@ -60,7 +62,7 @@ ROOT_URLCONF = 'warehouse_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,13 +83,14 @@ WSGI_APPLICATION = 'warehouse_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': 'postgres',
-        'PASSWORD': '236541',
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'NAME': 'warehouse_project',   # 실제 DB 이름
+        'USER': 'postgres',            # PostgreSQL 유저
+        'PASSWORD': '236541',  # 직접 입력!
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 
 
 
@@ -141,6 +144,8 @@ ALLOWED_HOSTS = ['warehouse-project-8wrh.onrender.com', 'localhost', '127.0.0.1'
 if os.getenv('RENDER'):
     import dj_database_url
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+
+    ALLOWED_HOSTS = ['warehouse-project-8wrh.onrender.com', 'localhost', '127.0.0.1']
 
     # 보안 관련 설정
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

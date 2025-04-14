@@ -5,7 +5,7 @@ class Product(models.Model):
     warehouse = models.CharField()   # 예: A
     shelf_number = models.CharField()          # 예: 03
     column = models.CharField()       # 예: C
-    level = models.CharField()                 # 예: 3
+    level = models.CharField(max_length=10)
 
     @property
     def location_code(self):

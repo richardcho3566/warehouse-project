@@ -1,0 +1,12 @@
+{% extends 'inventory/base.html' %}
+{% block content %}
+
+<h2>📥 엑셀로 제품 등록</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">업로드</button>
+</form>
+<a href="{% url 'product_list' %}">← 돌아가기</a>
+
+{% endblock %}
