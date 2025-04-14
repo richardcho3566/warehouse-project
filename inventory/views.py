@@ -121,3 +121,26 @@ def upload_csv(request):
     else:
         form = CSVUploadForm()
     return render(request, 'inventory/upload_csv.html', {'form': form})
+
+import csv
+from django.http import HttpResponse
+
+from .models import Product
+
+def download_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="products.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['product_name', 'warehouse', 'shelf_number', 'column', 'level'])
+
+    for product in Product.objects.all():
+        writer.writerow([
+            product.product_name,
+            product.warehouse,
+            product.shelf_number,
+            product.column,
+            product.level
+        ])
+
+    return response
