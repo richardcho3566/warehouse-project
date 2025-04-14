@@ -191,7 +191,7 @@ def update_grade(request, profile_id):
     return render(request, 'inventory/update_grade.html', {'form': form, 'profile': profile})
 
 
-ddef create_admin(request):
+def create_admin(request):
     if not User.objects.filter(username='admin').exists():
         User.objects.create_superuser(
             username='master',
