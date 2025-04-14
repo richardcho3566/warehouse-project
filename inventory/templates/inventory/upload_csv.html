@@ -1,7 +1,7 @@
 {% extends 'inventory/base.html' %}
 {% block content %}
 
-<h2>📥 CSV 파일로 제품 등록</h2>
+<h2 class="mb-3 fs-6">📥 CSV 파일로 제품 등록</h2>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
