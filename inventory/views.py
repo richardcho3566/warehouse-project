@@ -189,15 +189,3 @@ def update_grade(request, profile_id):
     else:
         form = GradeUpdateForm(instance=profile)
     return render(request, 'inventory/update_grade.html', {'form': form, 'profile': profile})
-
-
-def create_admin(request):
-    if not User.objects.filter(username='admin').exists():
-        User.objects.create_superuser(
-            username='admin',
-            email='admin@example.com',
-            password='admin1234'
-        )
-        return HttpResponse("✅ 슈퍼유저 'admin' 생성 완료!")
-    else:
-        return HttpResponse("ℹ️ 이미 admin 계정이 존재합니다.")
