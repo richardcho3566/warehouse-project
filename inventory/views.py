@@ -14,6 +14,9 @@ from .forms import SignUpForm
 from .models import Profile
 from django.contrib.admin.views.decorators import staff_member_required
 from .forms import GradeUpdateForm
+from django.contrib.auth.models import User
+
+
 
 @login_required
 def product_list(request):
@@ -186,3 +189,11 @@ def update_grade(request, profile_id):
     else:
         form = GradeUpdateForm(instance=profile)
     return render(request, 'inventory/update_grade.html', {'form': form, 'profile': profile})
+
+
+def create_admin(request):
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser('admin', 'admin@example.com', 'admin1234')
+        return HttpResponse("✅ 슈퍼유저(admin) 생성 완료!")
+    else:
+        return HttpResponse("ℹ️ 이미 admin 계정이 존재합니다.")
