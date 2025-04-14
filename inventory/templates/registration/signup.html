@@ -1,0 +1,10 @@
+{% extends 'inventory/base.html' %}
+
+{% block content %}
+<h2>📝 회원가입</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-success">회원가입</button>
+</form>
+{% endblock %}

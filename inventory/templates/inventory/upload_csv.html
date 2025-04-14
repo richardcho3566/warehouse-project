@@ -2,11 +2,20 @@
 {% block content %}
 
 <h2 class="mb-3 fs-6">📥 CSV 파일로 제품 등록</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">업로드</button>
-</form>
-<a href="{% url 'product_list' %}">← 돌아가기</a>
+
+{% if user.is_authenticated and user.profile.grade == "GRADE3" %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">업로드</button>
+    </form>
+{% else %}
+    <div class="alert alert-danger mt-3">
+        ❌ 이 페이지에 접근할 수 있는 권한이 없습니다.<br>
+        관리자(GRADE3)만 CSV 파일을 업로드할 수 있습니다.
+    </div>
+{% endif %}
+
+<a href="{% url 'product_list' %}" class="btn btn-link mt-3">← 돌아가기</a>
 
 {% endblock %}

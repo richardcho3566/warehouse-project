@@ -9,14 +9,29 @@
 </head>
 <body class="bg-light">
     <div class="container py-4">
-        <h1 class="mb-4">📦 재고 위치 관리 시스템</h1>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">📦 재고 위치 관리 시스템</h1>
+
+            <div>
+                {% if user.is_authenticated %}
+                    <span class="me-2">{{ user.username }} 님</span>
+                    <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">로그아웃</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm me-1">로그인</a>
+                    <a href="{% url 'signup' %}" class="btn btn-outline-success btn-sm">회원가입</a>
+                {% endif %}
+            </div>
+        </div>
+
         {% block content %}{% endblock %}
     </div>
-    
 
+    <!-- 웹앱을 앱처럼 보이게 -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" sizes="192x192" href="/static/icon.png">
 </body>
-<!-- 웹앱을 앱처럼 보이게 -->
-<meta name="mobile-web-app-capable" content="yes">
-<link rel="icon" sizes="192x192" href="/static/icon.png">
 </html>
-

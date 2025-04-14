@@ -1,0 +1,30 @@
+{% extends 'inventory/base.html' %}
+{% block content %}
+<h2>👤 사용자 등급 관리</h2>
+
+<table class="table table-bordered text-center">
+    <thead class="table-light">
+        <tr>
+            <th>아이디</th>
+            <th>이름</th>
+            <th>이메일</th>
+            <th>등급</th>
+            <th>변경</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.user.username }}</td>
+            <td>{{ user.user.first_name }}</td>
+            <td>{{ user.user.email }}</td>
+            <td>{{ user.grade }}</td>
+            <td>
+                <a href="{% url 'update_grade' user.id %}" class="btn btn-sm btn-outline-primary">변경</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'product_list' %}" class="btn btn-secondary">← 돌아가기</a>
+{% endblock %}

@@ -1,6 +1,9 @@
 from django import forms
 from .models import Product
 import re
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from .models import Profile
 
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -22,3 +25,21 @@ class ProductForm(forms.ModelForm):
 
 class CSVUploadForm(forms.Form):
     file = forms.FileField(label='CSV 파일 업로드')
+
+
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    first_name = forms.CharField(label='이름', required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'email', 'password1', 'password2')
+
+
+class GradeUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['grade']
+        widgets = {
+            'grade': forms.Select(attrs={'class': 'form-select'})
+        }

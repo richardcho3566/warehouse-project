@@ -1,0 +1,10 @@
+{% extends 'inventory/base.html' %}
+{% block content %}
+<h2>등급 변경 - {{ profile.user.username }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">변경</button>
+</form>
+<a href="{% url 'user_list' %}" class="btn btn-secondary">← 목록으로</a>
+{% endblock %}
