@@ -133,3 +133,17 @@ if os.getenv('RENDER'):
 LOGIN_URL = '/login/'  # 로그인 안했을 때 자동 리디렉션될 경로
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+# settings.py
+
+# 세션 쿠키 설정
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SAMESITE = 'None'
+
+# 브라우저 종료해도 세션 유지하고 싶으면 아래도 사용 가능
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'

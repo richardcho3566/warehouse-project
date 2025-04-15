@@ -42,12 +42,7 @@
         html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
           qrCodeMessage => {
             document.getElementById("search-input").value = qrCodeMessage;
-            html5QrCode.stop().then(() => {
-                document.querySelector("form").submit();
-            }).catch(err => {
-                console.error("카메라 종료 중 오류:", err);
-            });
-
+            html5QrCode.stop();
             qrRegion.style.display = "none";
           },
           errorMessage => {
