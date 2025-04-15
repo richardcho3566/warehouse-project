@@ -3,6 +3,7 @@
 {% block title %}제품 위치 조회{% endblock %}
 
 {% block content %}
+<audio id="beep-sound" src="{% static 'sound/beep.mp3' %}" preload="auto"></audio>
 
 <!-- QR코드용 스크립트 CDN -->
 <script src="https://unpkg.com/html5-qrcode"></script>
@@ -34,25 +35,29 @@
 
     <!-- 스캔 스크립트 -->
     <script>
-      function startQR() {
-        const qrRegion = document.getElementById("qr-reader");
-        qrRegion.style.display = "block";
-
-        const html5QrCode = new Html5Qrcode("qr-reader");
-        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-          qrCodeMessage => {
-            document.getElementById("search-input").value = qrCodeMessage;
-            html5QrCode.stop();
-            qrRegion.style.display = "none";
-          },
-          errorMessage => {
-            // 무시 (계속 스캔)
-          }
-        ).catch(err => {
-          alert("카메라 접근 실패: " + err);
-        });
-      }
-    </script>
+        function startQR() {
+          const qrRegion = document.getElementById("qr-reader");
+          qrRegion.style.display = "block";
+      
+          const html5QrCode = new Html5Qrcode("qr-reader");
+          html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+            qrCodeMessage => {
+              document.getElementById("beep-sound").play();  // ✅ 효과음 추가
+      
+              document.getElementById("search-input").value = qrCodeMessage;
+              document.querySelector("form").submit();       // 검색 자동 실행 시 필요
+              html5QrCode.stop();
+              qrRegion.style.display = "none";
+            },
+            errorMessage => {
+              // 무시 (계속 스캔 시도)
+            }
+          ).catch(err => {
+            alert("카메라 접근 실패: " + err);
+          });
+        }
+      </script>
+      
 
     <a href="{% url 'search_by_location' %}" class="btn btn-outline-success btn-sm">위치코드로 검색</a>
 
