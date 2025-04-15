@@ -35,7 +35,6 @@
         html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
           qrCodeMessage => {
             document.getElementById("location-input").value = qrCodeMessage;
-            document.querySelector("form").submit();
             html5QrCode.stop();
             qrRegion.style.display = "none";
           },
