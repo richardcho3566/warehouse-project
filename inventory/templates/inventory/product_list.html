@@ -1,10 +1,11 @@
-{% load static %}
-
 {% extends 'inventory/base.html' %}
 
 {% block title %}제품 위치 조회{% endblock %}
 
 {% block content %}
+
+{% load static %}
+
 <audio id="beep-sound" src="{% static 'sound/beep.mp3' %}" preload="auto"></audio>
 
 <!-- QR코드용 스크립트 CDN -->
