@@ -1,54 +1,116 @@
 {% extends 'inventory/base.html' %}
+{% load static %}
 
 {% block title %}제품 등록{% endblock %}
 
 {% block content %}
 <h2 class="mb-3 fs-6">📋 제품 등록</h2>
 
+<audio id="beep-sound" src="{% static 'sound/beep.mp3' %}" preload="auto"></audio>
+<script src="https://unpkg.com/html5-qrcode"></script>
+
 {% if messages %}
     {% for message in messages %}
-        <div class="alert alert-success">
-            {{ message }}
-        </div>
+        <div class="alert alert-success">{{ message }}</div>
     {% endfor %}
 {% endif %}
 
+<!-- QR 스캔 영역 -->
+<div id="qr-reader" style="width: 300px; display: none;" class="mb-3"></div>
+
 <form method="post" class="row g-3">
     {% csrf_token %}
+    
     <div class="col-md-6">
         <label class="form-label">제품명</label>
-        {{ form.product_name }}
+        <div class="d-flex">
+            {{ form.product_name }}
+            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="scanProductName()">📷</button>
+        </div>
     </div>
+
     <div class="col-md-3">
         <label class="form-label">창고 위치</label>
-        {{ form.warehouse }}
+        <div class="d-flex">
+            {{ form.warehouse }}
+            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="scanLocation()">📷</button>
+        </div>
     </div>
+
     <div class="col-md-3">
         <label class="form-label">선반 번호</label>
         {{ form.shelf_number }}
     </div>
+
     <div class="col-md-2">
         <label class="form-label">열(Column)</label>
         {{ form.column }}
     </div>
+
     <div class="col-md-2">
         <label class="form-label">층(Level)</label>
         {{ form.level }}
     </div>
+
     <div class="col-12">
         <button type="submit" class="btn btn-success">등록</button>
         <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">목록 보기</a>
     </div>
 </form>
-{% endblock %}
+
+<!-- 스크립트 -->
+<script>
+  const qrRegion = document.getElementById("qr-reader");
+
+  function startQR(callback) {
+    qrRegion.style.display = "block";
+    const html5QrCode = new Html5Qrcode("qr-reader");
+
+    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+      qrCodeMessage => {
+        document.getElementById("beep-sound").play();
+        callback(qrCodeMessage.trim());
+        html5QrCode.stop();
+        qrRegion.style.display = "none";
+      },
+      errorMessage => {
+        // 무시
+      }
+    ).catch(err => {
+      alert("카메라 접근 실패: " + err);
+    });
+  }
+
+  function scanProductName() {
+    startQR(text => {
+      document.getElementById("id_product_name").value = text;
+    });
+  }
+
+  function scanLocation() {
+    startQR(code => {
+      const parts = code.split('/');
+      if (parts.length === 4) {
+        document.getElementById("id_warehouse").value = parts[0];
+        document.getElementById("id_shelf_number").value = parts[1];
+        document.getElementById("id_column").value = parts[2];
+        document.getElementById("id_level").value = parts[3];
+      } else {
+        alert("올바른 위치코드 형식이 아닙니다. 예: A/01/B/3");
+      }
+    });
+  }
+</script>
+
 {% if form.errors %}
-    <div class="alert alert-danger">
-        <ul class="mb-0">
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                {% endfor %}
+<div class="alert alert-danger">
+    <ul class="mb-0">
+        {% for field in form %}
+            {% for error in field.errors %}
+                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
             {% endfor %}
-        </ul>
-    </div>
+        {% endfor %}
+    </ul>
+</div>
 {% endif %}
+{% endblock %}
