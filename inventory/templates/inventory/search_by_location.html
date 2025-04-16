@@ -12,6 +12,7 @@
 <div class="container my-4">
     <h2 class="mb-3 fs-6">📍 위치코드로 검색</h2>
     <audio id="beep-sound" src="{% static 'sound/beep.mp3' %}" preload="auto"></audio>
+
     <form method="get" action="." class="row g-2 mb-3">
         <div class="col-sm-8">
             <input type="text" id="location-input" name="q" class="form-control" placeholder="예: A-12-B3" value="{{ request.GET.q }}">
@@ -29,28 +30,35 @@
 
     <!-- 스캔 스크립트 -->
     <script>
-        function startQR() {
-          const qrRegion = document.getElementById("qr-reader");
-          qrRegion.style.display = "block";
-      
-          const html5QrCode = new Html5Qrcode("qr-reader");
-          html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-            qrCodeMessage => {
-              document.getElementById("beep-sound").play();  // ✅ 효과음 재생
-      
-              document.getElementById("location-input").value = qrCodeMessage;
-              html5QrCode.stop();
-              qrRegion.style.display = "none";
-            },
-            errorMessage => {
-              // 무시 (계속 스캔 시도)
+      function startQR() {
+        const qrRegion = document.getElementById("qr-reader");
+        qrRegion.style.display = "block";
+
+        const html5QrCode = new Html5Qrcode("qr-reader");
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+          qrCodeMessage => {
+            document.getElementById("beep-sound").play();
+
+            // ✅ 'A/01/A/1' 형식을 'A-01-A1'로 변환
+            const parts = qrCodeMessage.trim().split('/');
+            if (parts.length === 4) {
+              const formatted = `${parts[0]}-${parts[1]}-${parts[2]}${parts[3]}`;
+              document.getElementById("location-input").value = formatted;
+            } else {
+              alert("올바른 위치코드 형식이 아닙니다. 예: A/01/A/1");
             }
-          ).catch(err => {
-            alert("카메라 접근 실패: " + err);
-          });
-        }
-      </script>
-      
+
+            html5QrCode.stop();
+            qrRegion.style.display = "none";
+          },
+          errorMessage => {
+            // 무시
+          }
+        ).catch(err => {
+          alert("카메라 접근 실패: " + err);
+        });
+      }
+    </script>
 
     {% if query and not products %}
         <p class="text-muted">검색된 제품이 없습니다.</p>
