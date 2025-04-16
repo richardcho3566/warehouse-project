@@ -27,13 +27,17 @@ class CSVUploadForm(forms.Form):
     file = forms.FileField(label='CSV 파일 업로드')
 
 
+
 class SignUpForm(UserCreationForm):
-    email = forms.EmailField(required=True)
-    first_name = forms.CharField(label='이름', required=True)
+    username = forms.CharField(label='아이디')
+    email = forms.EmailField(label='이메일')
+    first_name = forms.CharField(label='이름')
+    password1 = forms.CharField(label='비밀번호', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='비밀번호 확인', widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'email', 'password1', 'password2')
+        fields = ['username', 'email', 'first_name', 'password1', 'password2']
 
 
 class GradeUpdateForm(forms.ModelForm):
