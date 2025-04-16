@@ -84,10 +84,10 @@
                         <td>{{ product.location_code }}</td>
                         {% if user.is_authenticated and user.profile.grade == "GRADE3" %}
                         <td>
-                            <form method="post" action="{% url 'delete_product' product.pk %}" style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-danger">삭제</button>
-                            </form>
+                          <form method="post" action="{% url 'delete_product' product.pk %}?from=search&q={{ request.GET.q }}" style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">삭제</button>
+                          </form>
                         </td>
                         {% endif %}
                     </tr>
