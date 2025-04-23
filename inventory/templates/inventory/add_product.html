@@ -75,9 +75,11 @@
 
     html5QrCode = new Html5Qrcode("qr-reader");
 
-    // 카메라 리스트 표시
+    // 카메라 리스트 불러오기
     const cameras = await Html5Qrcode.getCameras();
     cameraSelect.innerHTML = "";
+
+    // 카메라 select 박스 구성
     cameras.forEach(cam => {
       const option = document.createElement("option");
       option.value = cam.id;
@@ -86,7 +88,15 @@
     });
     cameraSelect.style.display = "block";
 
-    // 선택한 카메라로 시작
+    // ✅ 선호 카메라 자동 선택
+    const preferredLabel = "camera2 0, facing back";
+    const preferredCamera = cameras.find(cam =>
+      cam.label.toLowerCase().includes(preferredLabel.toLowerCase())
+    );
+    const selectedCameraId = preferredCamera ? preferredCamera.id : cameras[0].id;
+    cameraSelect.value = selectedCameraId;
+
+    // QR 인식 시작
     function scanWithCamera(deviceId) {
       html5QrCode.start(
         { deviceId: { exact: deviceId } },
@@ -106,14 +116,14 @@
       });
     }
 
-    // 드롭다운 변경 시 카메라 전환
+    // 셀렉트 변경 시 재시작
     cameraSelect.onchange = async () => {
       await html5QrCode.stop().catch(() => {});
       scanWithCamera(cameraSelect.value);
     };
 
-    // 초기 첫 카메라로 시작
-    scanWithCamera(cameraSelect.value);
+    // 자동 선택된 카메라로 시작
+    scanWithCamera(selectedCameraId);
   }
 
   function scanProductName() {
