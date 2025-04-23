@@ -63,32 +63,31 @@
 <script>
   const qrRegion = document.getElementById("qr-reader");
   const cameraSelect = document.getElementById("camera-select");
-  let html5QrCode;
+  let html5QrCode = null;
 
   async function startQR(callback) {
     qrRegion.style.display = "block";
     cameraSelect.style.display = "none";
 
-    if (html5QrCode) {
+    // 이전 세션 정리
+    if (html5QrCode && html5QrCode._isScanning) {
       await html5QrCode.stop().catch(() => {});
     }
 
     html5QrCode = new Html5Qrcode("qr-reader");
 
-    // 카메라 리스트 불러오기
     const cameras = await Html5Qrcode.getCameras();
     cameraSelect.innerHTML = "";
 
-    // 카메라 select 박스 구성
     cameras.forEach(cam => {
       const option = document.createElement("option");
       option.value = cam.id;
       option.text = cam.label || `Camera ${cam.id}`;
       cameraSelect.appendChild(option);
     });
+
     cameraSelect.style.display = "block";
 
-    // ✅ 선호 카메라 자동 선택
     const preferredLabel = "camera2 0, facing back";
     const preferredCamera = cameras.find(cam =>
       cam.label.toLowerCase().includes(preferredLabel.toLowerCase())
@@ -96,7 +95,6 @@
     const selectedCameraId = preferredCamera ? preferredCamera.id : cameras[0].id;
     cameraSelect.value = selectedCameraId;
 
-    // QR 인식 시작
     function scanWithCamera(deviceId) {
       html5QrCode.start(
         { deviceId: { exact: deviceId } },
@@ -104,25 +102,25 @@
         qrCodeMessage => {
           document.getElementById("beep-sound").play();
           callback(qrCodeMessage.trim());
-          html5QrCode.stop();
-          qrRegion.style.display = "none";
-          cameraSelect.style.display = "none";
+          html5QrCode.stop().then(() => {
+            html5QrCode = null;
+            qrRegion.style.display = "none";
+            cameraSelect.style.display = "none";
+          });
         },
-        errorMessage => {
-          // 인식 실패 무시
-        }
+        error => {}
       ).catch(err => {
         alert("카메라 시작 실패: " + err);
       });
     }
 
-    // 셀렉트 변경 시 재시작
     cameraSelect.onchange = async () => {
-      await html5QrCode.stop().catch(() => {});
+      if (html5QrCode && html5QrCode._isScanning) {
+        await html5QrCode.stop().catch(() => {});
+      }
       scanWithCamera(cameraSelect.value);
     };
 
-    // 자동 선택된 카메라로 시작
     scanWithCamera(selectedCameraId);
   }
 
