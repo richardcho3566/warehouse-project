@@ -17,6 +17,7 @@
 
 <!-- QR 스캔 영역 -->
 <div id="qr-reader" style="width: 300px; display: none;" class="mb-3"></div>
+<select id="camera-select" class="form-select form-select-sm mb-3" style="max-width: 300px; display: none;"></select>
 
 <form method="post" class="row g-3">
     {% csrf_token %}
@@ -61,37 +62,59 @@
 <!-- 스크립트 -->
 <script>
   const qrRegion = document.getElementById("qr-reader");
+  const cameraSelect = document.getElementById("camera-select");
+  let html5QrCode;
 
-  function startQR(callback) {
-  qrRegion.style.display = "block";
-  const html5QrCode = new Html5Qrcode("qr-reader");
+  async function startQR(callback) {
+    qrRegion.style.display = "block";
+    cameraSelect.style.display = "none";
 
-  const config = {
-    fps: 10,
-    qrbox: 250,
-    videoConstraints: {
-      facingMode: "environment",
-      width: { exact: 1920 },   // 원하는 해상도
-      height: { exact: 1080 }
+    if (html5QrCode) {
+      await html5QrCode.stop().catch(() => {});
     }
-  };
 
-  html5QrCode.start(
-    { facingMode: "environment" }, 
-    config,
-    qrCodeMessage => {
-      document.getElementById("beep-sound").play();
-      callback(qrCodeMessage.trim());
-      html5QrCode.stop();
-      qrRegion.style.display = "none";
-    },
-    errorMessage => {
-      // 에러 무시
+    html5QrCode = new Html5Qrcode("qr-reader");
+
+    // 카메라 리스트 표시
+    const cameras = await Html5Qrcode.getCameras();
+    cameraSelect.innerHTML = "";
+    cameras.forEach(cam => {
+      const option = document.createElement("option");
+      option.value = cam.id;
+      option.text = cam.label || `Camera ${cam.id}`;
+      cameraSelect.appendChild(option);
+    });
+    cameraSelect.style.display = "block";
+
+    // 선택한 카메라로 시작
+    function scanWithCamera(deviceId) {
+      html5QrCode.start(
+        { deviceId: { exact: deviceId } },
+        { fps: 10 },
+        qrCodeMessage => {
+          document.getElementById("beep-sound").play();
+          callback(qrCodeMessage.trim());
+          html5QrCode.stop();
+          qrRegion.style.display = "none";
+          cameraSelect.style.display = "none";
+        },
+        errorMessage => {
+          // 인식 실패 무시
+        }
+      ).catch(err => {
+        alert("카메라 시작 실패: " + err);
+      });
     }
-  ).catch(err => {
-    alert("카메라 접근 실패: " + err);
-  });
-}
+
+    // 드롭다운 변경 시 카메라 전환
+    cameraSelect.onchange = async () => {
+      await html5QrCode.stop().catch(() => {});
+      scanWithCamera(cameraSelect.value);
+    };
+
+    // 초기 첫 카메라로 시작
+    scanWithCamera(cameraSelect.value);
+  }
 
   function scanProductName() {
     startQR(text => {
