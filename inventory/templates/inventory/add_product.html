@@ -67,17 +67,16 @@
     const html5QrCode = new Html5Qrcode("qr-reader");
 
     html5QrCode.start(
-     { width: 1280, height: 720, facingMode: "environment" },  // 해상도 높이기
-     { fps: 10, qrbox: 250 },
-     qrCodeMessage => {
+      { video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "environment" } },
+      { fps: 10, qrbox: 250 },
+       qrCodeMessage => {
        document.getElementById("beep-sound").play();
        callback(qrCodeMessage.trim());
        html5QrCode.stop();
        qrRegion.style.display = "none";
-    },
-    errorMessage => {
-    // 무시
-    }
+       },
+     errorMessage => {
+     }
     ).catch(err => {
      alert("카메라 접근 실패: " + err);
     });
