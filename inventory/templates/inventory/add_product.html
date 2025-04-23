@@ -63,23 +63,35 @@
   const qrRegion = document.getElementById("qr-reader");
 
   function startQR(callback) {
-    qrRegion.style.display = "block";
-    const html5QrCode = new Html5Qrcode("qr-reader");
+  qrRegion.style.display = "block";
+  const html5QrCode = new Html5Qrcode("qr-reader");
 
-    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-      qrCodeMessage => {
-        document.getElementById("beep-sound").play();
-        callback(qrCodeMessage.trim());
-        html5QrCode.stop();
-        qrRegion.style.display = "none";
-      },
-      errorMessage => {
-        // 무시
-      }
-    ).catch(err => {
-      alert("카메라 접근 실패: " + err);
-    });
-  }
+  const config = {
+    fps: 10,
+    qrbox: 250,
+    videoConstraints: {
+      facingMode: "environment",
+      width: { ideal: 1920 },   // 원하는 해상도
+      height: { ideal: 1080 }
+    }
+  };
+
+  html5QrCode.start(
+    { facingMode: "environment" }, 
+    config,
+    qrCodeMessage => {
+      document.getElementById("beep-sound").play();
+      callback(qrCodeMessage.trim());
+      html5QrCode.stop();
+      qrRegion.style.display = "none";
+    },
+    errorMessage => {
+      // 에러 무시
+    }
+  ).catch(err => {
+    alert("카메라 접근 실패: " + err);
+  });
+}
 
   function scanProductName() {
     startQR(text => {
