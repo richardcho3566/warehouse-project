@@ -13,6 +13,7 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='inventory/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('signup/', signup_view, name='signup'),
+    path('users/', views.user_list, name='manage_users'),
     path('users/', views.user_list, name='user_list'),
     path('users/<int:profile_id>/update/', update_grade, name='update_grade'),\
 ]
