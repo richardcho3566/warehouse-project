@@ -7,8 +7,6 @@
 {% load static %}
 
 <audio id="beep-sound" src="{% static 'sound/beep.mp3' %}" preload="auto"></audio>
-
-<!-- QR코드용 스크립트 CDN -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <div class="container my-4">
@@ -33,36 +31,73 @@
         </div>
     </form>
 
-    <!-- QR 스캔 영역 -->
+    <!-- QR 스캔 영역 및 카메라 선택 -->
     <div id="qr-reader" style="width: 300px; display: none; margin-bottom: 1rem;"></div>
+    <select id="camera-select" class="form-select form-select-sm mb-3" style="max-width: 300px; display: none;"></select>
 
-   <!-- 스캔 스크립트 -->
-<script>
-    function startQR() {
+    <script>
       const qrRegion = document.getElementById("qr-reader");
-      qrRegion.style.display = "block";
-  
-      const html5QrCode = new Html5Qrcode("qr-reader");
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        qrCodeMessage => {
-          document.getElementById("beep-sound").play();  // ✅ 효과음
-          document.getElementById("search-input").value = qrCodeMessage; // ✅ 텍스트만 넣기
-  
-          html5QrCode.stop();
-          qrRegion.style.display = "none";
-        },
-        errorMessage => {
-          // 무시 (계속 스캔 시도)
+      const cameraSelect = document.getElementById("camera-select");
+      let html5QrCode = null;
+
+      async function startQR() {
+        qrRegion.style.display = "block";
+        cameraSelect.style.display = "none";
+
+        if (html5QrCode && html5QrCode._isScanning) {
+          await html5QrCode.stop().catch(() => {});
         }
-      ).catch(err => {
-        alert("카메라 접근 실패: " + err);
-      });
-    }
-  </script>
-  
-      
+
+        html5QrCode = new Html5Qrcode("qr-reader");
+
+        const cameras = await Html5Qrcode.getCameras();
+        cameraSelect.innerHTML = "";
+
+        cameras.forEach(cam => {
+          const option = document.createElement("option");
+          option.value = cam.id;
+          option.text = cam.label || `Camera ${cam.id}`;
+          cameraSelect.appendChild(option);
+        });
+
+        cameraSelect.style.display = "block";
+
+        const preferredLabel = "camera2 0, facing back";
+        const preferredCamera = cameras.find(cam =>
+          cam.label.toLowerCase().includes(preferredLabel.toLowerCase())
+        );
+        const selectedCameraId = preferredCamera ? preferredCamera.id : cameras[0].id;
+        cameraSelect.value = selectedCameraId;
+
+        function scanWithCamera(deviceId) {
+          html5QrCode.start(
+            { deviceId: { exact: deviceId } },
+            { fps: 10, qrbox: 250 },
+            qrCodeMessage => {
+              document.getElementById("beep-sound").play();
+              document.getElementById("search-input").value = qrCodeMessage.trim();
+              html5QrCode.stop().then(() => {
+                html5QrCode = null;
+                qrRegion.style.display = "none";
+                cameraSelect.style.display = "none";
+              });
+            },
+            error => {}
+          ).catch(err => {
+            alert("카메라 시작 실패: " + err);
+          });
+        }
+
+        cameraSelect.onchange = async () => {
+          if (html5QrCode && html5QrCode._isScanning) {
+            await html5QrCode.stop().catch(() => {});
+          }
+          scanWithCamera(cameraSelect.value);
+        };
+
+        scanWithCamera(selectedCameraId);
+      }
+    </script>
 
     <a href="{% url 'search_by_location' %}" class="btn btn-outline-success btn-sm">위치코드로 검색</a>
 
