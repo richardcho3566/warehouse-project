@@ -1,21 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Product
-from .forms import ProductForm, CSVUploadForm
+from .forms import ProductForm, CSVUploadForm, SignUpForm, GradeUpdateForm
 from django.contrib import messages
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 import io
 import csv
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
-from django.http import HttpResponse
+from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import login
-from .forms import SignUpForm
 from .models import Profile
 from django.contrib.admin.views.decorators import staff_member_required
-from .forms import GradeUpdateForm
 from django.contrib.auth.models import User
-
+from .decorators import grade_required
 
 
 @login_required
@@ -45,11 +42,10 @@ def product_list(request):
         'order': order,
     })
 
-@login_required
-def add_product(request):
-    if request.user.profile.grade not in ['GRADE2', 'GRADE3']:
-        return HttpResponseForbidden("권한이 없습니다.")  # 403 오류 반환
 
+@login_required
+@grade_required(['GRADE2', 'GRADE3'])
+def add_product(request):
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
@@ -97,7 +93,6 @@ def search_by_location(request):
             except:
                 products = []
         else:
-            # 제품명 기준 검색
             products = Product.objects.filter(product_name__icontains=query)
 
     return render(request, 'inventory/search_by_location.html', {
@@ -114,7 +109,7 @@ def upload_csv(request):
             decoded_file = csv_file.read().decode('utf-8')
             io_string = io.StringIO(decoded_file)
             reader = csv.reader(io_string)
-            next(reader)  # 첫 줄 (헤더) 건너뛰기
+            next(reader)
 
             for row in reader:
                 product_name, warehouse, shelf_number, column, level = row
@@ -129,7 +124,6 @@ def upload_csv(request):
     else:
         form = CSVUploadForm()
     return render(request, 'inventory/upload_csv.html', {'form': form})
-
 
 
 def download_csv(request):
@@ -151,16 +145,13 @@ def download_csv(request):
     return response
 
 
-
-
 def signup_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # 기본 등급 GRADE1 부여
             Profile.objects.create(user=user, grade='GRADE1')
-            login(request, user)  # 회원가입 후 자동 로그인
+            login(request, user)
             return redirect('product_list')
     else:
         form = SignUpForm()
@@ -168,18 +159,15 @@ def signup_view(request):
 
 
 @login_required
+@grade_required(['GRADE3'])
 def user_list(request):
-    if not request.user.profile.grade == 'GRADE3':
-        return redirect('product_list')
-
     users = Profile.objects.select_related('user').all()
     return render(request, 'inventory/user_list.html', {'users': users})
 
-@login_required
-def update_grade(request, profile_id):
-    if not request.user.profile.grade == 'GRADE3':
-        return redirect('product_list')
 
+@login_required
+@grade_required(['GRADE3'])
+def update_grade(request, profile_id):
     profile = Profile.objects.get(id=profile_id)
     if request.method == 'POST':
         form = GradeUpdateForm(request.POST, instance=profile)
