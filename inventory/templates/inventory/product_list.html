@@ -72,7 +72,7 @@
         function scanWithCamera(deviceId) {
           html5QrCode.start(
             { deviceId: { exact: deviceId } },
-            { fps: 10, qrbox: 250 },
+            { fps: 10 },
             qrCodeMessage => {
               document.getElementById("beep-sound").play();
               document.getElementById("search-input").value = qrCodeMessage.trim();
