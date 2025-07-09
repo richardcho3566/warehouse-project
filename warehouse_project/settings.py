@@ -147,3 +147,4 @@ CSRF_COOKIE_SAMESITE = 'None'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+ 
