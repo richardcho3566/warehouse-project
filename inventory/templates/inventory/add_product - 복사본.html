@@ -10,9 +10,9 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 {% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-success">{{ message }}</div>
-    {% endfor %}
+  {% for message in messages %}
+    <div class="alert alert-success">{{ message }}</div>
+  {% endfor %}
 {% endif %}
 
 <!-- QR 스캔 영역 -->
@@ -20,44 +20,77 @@
 <select id="camera-select" class="form-select form-select-sm mb-3" style="max-width: 300px; display: none;"></select>
 
 <form method="post" class="row g-3">
-    {% csrf_token %}
-    
-    <div class="col-md-6">
-        <label class="form-label">제품명</label>
-        <div class="d-flex">
-            {{ form.product_name }}
-            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="scanProductName()">📷</button>
-        </div>
-    </div>
+  {% csrf_token %}
 
-    <div class="col-md-3">
-        <label class="form-label">창고 위치</label>
-        <div class="d-flex">
-            {{ form.warehouse }}
-            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="scanLocation()">📷</button>
-        </div>
+  <div class="col-md-6">
+    <label class="form-label">제품명</label>
+    <div class="d-flex">
+      {{ form.product_name }}
+      <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="scanProductName()">📷</button>
+      <button type="submit" name="action" value="search" class="btn btn-outline-primary btn-sm ms-2">검색</button>
     </div>
+  </div>
 
-    <div class="col-md-3">
-        <label class="form-label">선반 번호</label>
-        {{ form.shelf_number }}
+  <div class="col-md-3">
+    <label class="form-label">창고 위치</label>
+    <div class="d-flex">
+      {{ form.warehouse }}
+      <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="scanLocation()">📷</button>
     </div>
+  </div>
 
-    <div class="col-md-2">
-        <label class="form-label">열(Column)</label>
-        {{ form.column }}
-    </div>
+  <div class="col-md-3">
+    <label class="form-label">선반 번호</label>
+    {{ form.shelf_number }}
+  </div>
 
-    <div class="col-md-2">
-        <label class="form-label">층(Level)</label>
-        {{ form.level }}
-    </div>
+  <div class="col-md-2">
+    <label class="form-label">열(Column)</label>
+    {{ form.column }}
+  </div>
 
-    <div class="col-12">
-        <button type="submit" class="btn btn-success">등록</button>
-        <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">HOME</a>
-    </div>
+  <div class="col-md-2">
+    <label class="form-label">층(Level)</label>
+    {{ form.level }}
+  </div>
+
+  <div class="col-12">
+    <button type="submit" name="action" value="submit" class="btn btn-success">등록</button>
+    <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">HOME</a>
+  </div>
 </form>
+
+<!-- 위치 결과 표시 -->
+{% if matched_products %}
+<hr>
+<h5 class="mt-4">🔍 등록된 위치 정보</h5>
+<div class="table-responsive">
+  <table class="table table-bordered text-center">
+    <thead class="table-light">
+      <tr>
+        <th>제품명</th>
+        <th>창고</th>
+        <th>선반</th>
+        <th>열</th>
+        <th>층</th>
+        <th>위치코드</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in matched_products %}
+      <tr>
+        <td>{{ p.product_name }}</td>
+        <td>{{ p.warehouse }}</td>
+        <td>{{ p.shelf_number }}</td>
+        <td>{{ p.column }}</td>
+        <td>{{ p.level }}</td>
+        <td>{{ p.location_code }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
 
 <!-- 스크립트 -->
 <script>
@@ -69,7 +102,6 @@
     qrRegion.style.display = "block";
     cameraSelect.style.display = "none";
 
-    // 이전 세션 정리
     if (html5QrCode && html5QrCode._isScanning) {
       await html5QrCode.stop().catch(() => {});
     }
@@ -127,7 +159,6 @@
   function scanProductName() {
     startQR(text => {
       document.getElementById("id_product_name").value = text;
-      // 자동 검색은 하지 않음
     });
   }
 
@@ -148,13 +179,15 @@
 
 {% if form.errors %}
 <div class="alert alert-danger">
-    <ul class="mb-0">
-        {% for field in form %}
-            {% for error in field.errors %}
-                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-            {% endfor %}
-        {% endfor %}
-    </ul>
+  <ul class="mb-0">
+    {% for field in form %}
+      {% for error in field.errors %}
+        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+      {% endfor %}
+    {% endfor %}
+  </ul>
 </div>
 {% endif %}
+
 {% endblock %}
+ 
