@@ -12,6 +12,17 @@
   }
 </style>
 
+<!--폰트크기 조절-->
+<style>
+  @media (max-width: 576px) {  /* 모바일 화면 기준 */
+    .table td,
+    .table th {
+      font-size: 0.75rem;  /* 기본은 0.875rem 정도, 줄여서 표시 */
+      white-space: nowrap; /* 줄바꿈 방지 */
+    }
+  }
+</style>
+
 
 {% load static %}
 
@@ -123,7 +134,7 @@
 
     {% if products %}
     <div class="table-responsive mt-3">
-        <table class="table table-bordered table-hover text-center align-middle">
+        <table class="table table-sm table-bordered table-hover text-center align-middle">
             <thead class="table-dark">
                 <tr>
                     <th>
