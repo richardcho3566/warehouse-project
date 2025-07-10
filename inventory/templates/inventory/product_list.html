@@ -7,7 +7,7 @@
 <!--고정버튼 크기조절-->
 <style>
   .fixed-btn {
-    min-width: 140px;  /* 필요한 경우 길이 조정 */
+    min-width: 87px;  /* 필요한 경우 길이 조정 */
     text-align: center;
   }
 </style>
@@ -43,12 +43,13 @@
         <div class="col-sm-8">
             <input type="text" id="search-input" name="q" class="form-control" placeholder="제품명을 검색하세요" value="{{ request.GET.q }}">
         </div>
-        <div class="col-sm-2">
-            <button type="submit" class="btn btn-outline-success w-100">🔍</button>
+        <div class="col-sm-4">
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-outline-success w-50 py-2">🔍 검색</button>
+                <button type="button" class="btn btn-outline-secondary w-50 py-2" onclick="startQR()">📷 스캔</button>
+            </div>
         </div>
-        <div class="col-sm-2">
-            <button type="button" class="btn btn-outline-secondary w-100" onclick="startQR()">📷</button>
-        </div>
+
     </form>
 
     <!-- QR 스캔 영역 및 카메라 선택 -->
@@ -119,16 +120,16 @@
       }
     </script>
 
-    <a href="{% url 'search_by_location' %}" class="btn btn-outline-success btn-sm fixed-btn">위치코드로 검색</a>
+    <a href="{% url 'search_by_location' %}" class="btn btn-outline-success btn-sm fixed-btn">위치코드</a>
 
     {% if user.is_authenticated %}
         {% if user.profile.grade == "GRADE2" or user.profile.grade == "GRADE3" %}
             <a href="{% url 'add_product' %}" class="btn btn-outline-success btn-sm fixed-btn">제품등록</a>
-            <a href="{% url 'download_csv' %}" class="btn btn-outline-success btn-sm fixed-btn">CSV다운로드</a>
+            <a href="{% url 'download_csv' %}" class="btn btn-outline-success btn-sm fixed-btn">CSV다운</a>
         {% endif %}
         {% if user.profile.grade == "GRADE3" %}
-            <a href="{% url 'upload_csv' %}" class="btn btn-outline-success btn-sm fixed-btn">CSV업로드</a>
-            <a href="{% url 'manage_users' %}" class="btn btn-outline-danger btn-sm fixed-btn">회원등급관리</a>
+            <a href="{% url 'upload_csv' %}" class="btn btn-outline-success btn-sm fixed-btn">CSV업</a>
+            <a href="{% url 'manage_users' %}" class="btn btn-outline-danger btn-sm fixed-btn">회원관리</a>
         {% endif %}
     {% endif %}
 
