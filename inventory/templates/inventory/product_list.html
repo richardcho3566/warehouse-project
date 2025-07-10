@@ -33,7 +33,7 @@
 
     <!-- QR 스캔 영역 및 카메라 선택 -->
     <div id="qr-reader" style="width: 300px; display: none;" class="mb-3"></div>
-     <select id="camera-select" class="form-select form-select-sm mb-3" style="max-width: 300px; display: none;"></select>
+    <select id="camera-select" class="form-select form-select-sm mb-3" style="max-width: 300px; display: none;"></select>
 
     <script>
       const qrRegion = document.getElementById("qr-reader");
@@ -112,10 +112,6 @@
         {% endif %}
     {% endif %}
 
-    {% if query and not products %}
-        <p class="text-muted">검색된 제품이 없습니다.</p>
-    {% endif %}
-
     {% if products %}
     <div class="table-responsive mt-3">
         <table class="table table-bordered table-hover text-center align-middle">
@@ -164,6 +160,10 @@
         {% if not query %}
             <p class="text-muted">등록된 제품이 없습니다.</p>
         {% endif %}
+    {% endif %}
+
+    {% if query %}
+        <a href="{% url 'add_product' %}?product_name={{ query }}" class="btn btn-primary mt-3">"{{ query }}" 제품 등록하기</a>
     {% endif %}
 </div>
 {% endblock %}

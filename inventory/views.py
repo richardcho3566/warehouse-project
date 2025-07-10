@@ -46,15 +46,20 @@ def product_list(request):
 @login_required
 @grade_required(['GRADE2', 'GRADE3'])
 def add_product(request):
+    product_name = request.GET.get('product_name', '')
+
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, '제품이 등록되었습니다!')
-            form = ProductForm()
+            messages.success(request, '제품이 성공적으로 등록되었습니다.')
+            return redirect('add_product')
     else:
-        form = ProductForm()
+        form = ProductForm(initial={'product_name': product_name})
+
     return render(request, 'inventory/add_product.html', {'form': form})
+
+
 
 
 @require_POST

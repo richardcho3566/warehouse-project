@@ -5,13 +5,24 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Profile
 
+# 라디오 버튼 옵션 정의
+WAREHOUSE_CHOICES = [
+    ('A', 'A'),
+    ('B', 'B'),
+]
+
 class ProductForm(forms.ModelForm):
+    # warehouse 필드를 라디오 버튼으로 오버라이드
+    warehouse = forms.ChoiceField(
+        choices=WAREHOUSE_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
+    )
+
     class Meta:
         model = Product
         fields = ['product_name', 'warehouse', 'shelf_number', 'column', 'level']
         widgets = {
             'product_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'warehouse': forms.TextInput(attrs={'class': 'form-control'}),
             'shelf_number': forms.TextInput(attrs={'class': 'form-control'}),
             'column': forms.TextInput(attrs={'class': 'form-control'}),
             'level': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -23,9 +34,9 @@ class ProductForm(forms.ModelForm):
             raise forms.ValidationError("소문자는 입력할 수 없습니다.")
         return name
 
+
 class CSVUploadForm(forms.Form):
     file = forms.FileField(label='CSV 파일 업로드')
-
 
 
 class SignUpForm(UserCreationForm):
