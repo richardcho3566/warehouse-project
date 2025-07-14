@@ -13,7 +13,7 @@ from .models import Profile
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from .decorators import grade_required
-
+from django.db.models import Q
 
 @login_required
 def product_list(request):
@@ -77,26 +77,43 @@ def delete_product(request, pk):
 
 
 def search_by_location(request):
-    query = request.GET.get('q')
+    query = request.GET.get('q', '').strip().upper()
     products = []
 
+    def parse_code(code):
+        code = code.replace("-", "")
+        if len(code) < 3:
+            return None
+
+        warehouse = code[0]
+        shelf = code[1:3]
+        rest = code[3:]
+
+        import re
+        match = re.match(r'^([A-Z0-9]{1,2})(\d?)$', rest)
+        if not match:
+            column = ""
+            level = ""
+        else:
+            column = match.group(1)
+            level = match.group(2)
+
+        return warehouse, shelf, column, level
+
     if query:
-        query = query.strip()
-        if '-' in query and len(query.split('-')) == 3:
-            try:
-                parts = query.upper().split('-')
-                warehouse = parts[0]
-                shelf = parts[1]
-                column = parts[2][0]
-                level = int(parts[2][1:])
-                products = Product.objects.filter(
-                    warehouse=warehouse,
-                    shelf_number=shelf,
-                    column=column,
-                    level=level
-                )
-            except:
-                products = []
+        parsed = parse_code(query)
+        if parsed:
+            warehouse, shelf, column, level = parsed
+            filters = {
+                'warehouse__iexact': warehouse,
+                'shelf_number__istartswith': shelf,
+            }
+            if column:
+                filters['column__istartswith'] = column
+            if level:
+                filters['level__startswith'] = level
+
+            products = Product.objects.filter(**filters)
         else:
             products = Product.objects.filter(product_name__icontains=query)
 
@@ -104,6 +121,7 @@ def search_by_location(request):
         'products': products,
         'query': query
     })
+
 
 
 def upload_csv(request):
