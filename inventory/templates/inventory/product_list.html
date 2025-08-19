@@ -7,25 +7,23 @@
 <!--고정버튼 크기조절-->
 <style>
   .fixed-btn {
-    min-width: 65px;  /* 필요한 경우 길이 조정 */
+    min-width: 65px;
     min-height: 48px;
     text-align: center;
     line-height: 40px;
-    text
   }
 </style>
 
 <!--폰트크기 조절-->
 <style>
-  @media (max-width: 576px) {  /* 모바일 화면 기준 */
+  @media (max-width: 576px) {
     .table td,
     .table th {
-      font-size: 0.75rem;  /* 기본은 0.875rem 정도, 줄여서 표시 */
-      white-space: nowrap; /* 줄바꿈 방지 */
+      font-size: 0.75rem;
+      white-space: nowrap;
     }
   }
 </style>
-
 
 {% load static %}
 
@@ -33,163 +31,162 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <div class="container my-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-3 fs-6">📦 제품 위치 조회</h2>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-3 fs-6">📦 제품 위치 조회</h2>
+  </div>
+
+  {% if user.is_authenticated %}
+    <p class="text-muted">👤 {{ user.username }} ({{ user.profile.grade }})</p>
+  {% endif %}
+
+  <!-- 검색창 + QR 버튼 -->
+  <form method="get" action="." class="row g-2 mb-3">
+    <div class="col-sm-8">
+      <input type="text" id="search-input" name="q" class="form-control" placeholder="제품명을 검색하세요" value="{{ request.GET.q }}">
     </div>
+    <div class="col-sm-4">
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary w-50 py-3" onclick="startQR()">📷 스캔</button>
+        <button type="submit" class="btn btn-outline-success w-50 py-3">🔍 검색</button>
+      </div>
+    </div>
+  </form>
 
-    {% if user.is_authenticated %}
-        <p class="text-muted">👤 {{ user.username }} ({{ user.profile.grade }})</p>
-    {% endif %}
+  <!-- QR 스캔 영역 및 카메라 선택 -->
+  <div id="qr-reader" style="width: 300px; display: none;" class="mb-3"></div>
+  <select id="camera-select" class="form-select form-select-sm mb-3" style="max-width: 300px; display: none;"></select>
 
-    <!-- 검색창 + QR 버튼 -->
-    <form method="get" action="." class="row g-2 mb-3">
-        <div class="col-sm-8">
-            <input type="text" id="search-input" name="q" class="form-control" placeholder="제품명을 검색하세요" value="{{ request.GET.q }}">
-        </div>
-        <div class="col-sm-4">
-            <div class="d-flex gap-2">
-                <button type="button" class="btn btn-outline-secondary w-50 py-3" onclick="startQR()">📷 스캔</button>
-                <button type="submit" class="btn btn-outline-success w-50 py-3">🔍 검색</button>
-            </div>
-        </div>
+  <script>
+    const qrRegion = document.getElementById("qr-reader");
+    const cameraSelect = document.getElementById("camera-select");
+    let html5QrCode = null;
 
-    </form>
+    async function startQR() {
+      qrRegion.style.display = "block";
+      cameraSelect.style.display = "none";
 
-    <!-- QR 스캔 영역 및 카메라 선택 -->
-    <div id="qr-reader" style="width: 300px; display: none;" class="mb-3"></div>
-    <select id="camera-select" class="form-select form-select-sm mb-3" style="max-width: 300px; display: none;"></select>
+      if (html5QrCode && html5QrCode._isScanning) {
+        await html5QrCode.stop().catch(() => {});
+      }
 
-    <script>
-      const qrRegion = document.getElementById("qr-reader");
-      const cameraSelect = document.getElementById("camera-select");
-      let html5QrCode = null;
+      html5QrCode = new Html5Qrcode("qr-reader");
 
-      async function startQR() {
-        qrRegion.style.display = "block";
-        cameraSelect.style.display = "none";
+      const cameras = await Html5Qrcode.getCameras();
 
+      // ✅ camera 0만 필터링
+      const filteredCameras = cameras.filter(cam =>
+        cam.label.toLowerCase().includes("camera 0")
+      );
+
+      cameraSelect.innerHTML = "";
+      (filteredCameras.length ? filteredCameras : cameras).forEach(cam => {
+        const option = document.createElement("option");
+        option.value = cam.id;
+        option.text = cam.label || `Camera ${cam.id}`;
+        cameraSelect.appendChild(option);
+      });
+
+      cameraSelect.style.display = "block";
+
+      const selectedCameraId = cameraSelect.options[0].value;
+      cameraSelect.value = selectedCameraId;
+
+      function scanWithCamera(deviceId) {
+        html5QrCode.start(
+          { deviceId: { exact: deviceId } },
+          { fps: 10 },
+          qrCodeMessage => {
+            document.getElementById("beep-sound").play();
+            document.getElementById("search-input").value = qrCodeMessage.trim();
+            html5QrCode.stop().then(() => {
+              html5QrCode = null;
+              qrRegion.style.display = "none";
+              cameraSelect.style.display = "none";
+            });
+          },
+          error => {}
+        ).catch(err => {
+          alert("카메라 시작 실패: " + err);
+        });
+      }
+
+      cameraSelect.onchange = async () => {
         if (html5QrCode && html5QrCode._isScanning) {
           await html5QrCode.stop().catch(() => {});
         }
-
-        html5QrCode = new Html5Qrcode("qr-reader");
-
-        const cameras = await Html5Qrcode.getCameras();
-        cameraSelect.innerHTML = "";
-
-        cameras.forEach(cam => {
-          const option = document.createElement("option");
-          option.value = cam.id;
-          option.text = cam.label || `Camera ${cam.id}`;
-          cameraSelect.appendChild(option);
-        });
-
-        cameraSelect.style.display = "block";
-
-        const preferredLabel = "camera 0, facing back";
-        const preferredCamera = cameras.find(cam =>
-          cam.label.toLowerCase().includes("back")
-        ) || cameras[0];
-
-        const selectedCameraId = preferredCamera ? preferredCamera.id : cameras[0].id;
-        cameraSelect.value = selectedCameraId;
-
-        function scanWithCamera(deviceId) {
-          html5QrCode.start(
-            { deviceId: { exact: deviceId } },
-            { fps: 10 },
-            qrCodeMessage => {
-              document.getElementById("beep-sound").play();
-              document.getElementById("search-input").value = qrCodeMessage.trim();
-              html5QrCode.stop().then(() => {
-                html5QrCode = null;
-                qrRegion.style.display = "none";
-                cameraSelect.style.display = "none";
-              });
-            },
-            error => {}
-          ).catch(err => {
-            alert("카메라 시작 실패: " + err);
-          });
-        }
-
-        cameraSelect.onchange = async () => {
-          if (html5QrCode && html5QrCode._isScanning) {
-            await html5QrCode.stop().catch(() => {});
-            await html5QrCode.clear().catch(() => {});
-        }
         scanWithCamera(cameraSelect.value);
-        };
+      };
 
-        scanWithCamera(selectedCameraId);
-      }
-    </script>
+      scanWithCamera(selectedCameraId);
+    }
+  </script>
 
-    <a href="{% url 'search_by_location' %}" class="btn btn-outline-success btn-sm fixed-btn">위치코드</a>
+  <a href="{% url 'search_by_location' %}" class="btn btn-outline-success btn-sm fixed-btn">위치코드</a>
 
-    {% if user.is_authenticated %}
-        {% if user.profile.grade == "GRADE2" or user.profile.grade == "GRADE3" %}
-            <a href="{% url 'add_product' %}" class="btn btn-outline-success btn-sm fixed-btn">제품등록</a>
-            <a href="{% url 'download_csv' %}" class="btn btn-outline-success btn-sm fixed-btn">CSV다운</a>
-        {% endif %}
-        {% if user.profile.grade == "GRADE3" %}
-            <a href="{% url 'upload_csv' %}" class="btn btn-outline-success btn-sm fixed-btn">CSV업</a>
-            <a href="{% url 'manage_users' %}" class="btn btn-outline-danger btn-sm fixed-btn">회원관리</a>
-        {% endif %}
+  {% if user.is_authenticated %}
+    {% if user.profile.grade == "GRADE2" or user.profile.grade == "GRADE3" %}
+      <a href="{% url 'add_product' %}" class="btn btn-outline-success btn-sm fixed-btn">제품등록</a>
+      <a href="{% url 'download_csv' %}" class="btn btn-outline-success btn-sm fixed-btn">CSV다운</a>
     {% endif %}
+    {% if user.profile.grade == "GRADE3" %}
+      <a href="{% url 'upload_csv' %}" class="btn btn-outline-success btn-sm fixed-btn">CSV업</a>
+      <a href="{% url 'manage_users' %}" class="btn btn-outline-danger btn-sm fixed-btn">회원관리</a>
+    {% endif %}
+  {% endif %}
 
-    {% if products %}
+  {% if products %}
     <div class="table-responsive mt-3">
-        <table class="table table-sm table-bordered table-hover text-center align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>
-                        <a href="?{% if query %}q={{ query }}&{% endif %}sort=product_name&order={% if sort == 'product_name' and order == 'asc' %}desc{% else %}asc{% endif %}">
-                            제품명
-                            {% if sort == 'product_name' %}
-                                {% if order == 'asc' %}⬆️{% else %}⬇️{% endif %}
-                            {% endif %}
-                        </a>
-                    </th>
-                    <th>
-                        <a href="?{% if query %}q={{ query }}&{% endif %}sort=location_code&order={% if sort == 'location_code' and order == 'asc' %}desc{% else %}asc{% endif %}">
-                            위치코드
-                            {% if sort == 'location_code' %}
-                                {% if order == 'asc' %}⬆️{% else %}⬇️{% endif %}
-                            {% endif %}
-                        </a>
-                    </th>
-                    {% if user.is_authenticated and user.profile.grade == "GRADE3" %}
-                        <th>삭제</th>
-                    {% endif %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for product in products %}
-                <tr>
-                    <td>{{ product.product_name }}</td>
-                    <td>{{ product.location_code }}</td>
-                    {% if user.is_authenticated and user.profile.grade == "GRADE3" %}
-                    <td>
-                        <form method="post" action="{% url 'delete_product' product.pk %}" style="display:inline;" onsubmit="return confirm('정말 이 제품을 삭제하시겠습니까?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">삭제</button>
-                        </form>
-                    </td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+      <table class="table table-sm table-bordered table-hover text-center align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>
+              <a href="?{% if query %}q={{ query }}&{% endif %}sort=product_name&order={% if sort == 'product_name' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                제품명
+                {% if sort == 'product_name' %}
+                  {% if order == 'asc' %}⬆️{% else %}⬇️{% endif %}
+                {% endif %}
+              </a>
+            </th>
+            <th>
+              <a href="?{% if query %}q={{ query }}&{% endif %}sort=location_code&order={% if sort == 'location_code' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                위치코드
+                {% if sort == 'location_code' %}
+                  {% if order == 'asc' %}⬆️{% else %}⬇️{% endif %}
+                {% endif %}
+              </a>
+            </th>
+            {% if user.is_authenticated and user.profile.grade == "GRADE3" %}
+              <th>삭제</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in products %}
+          <tr>
+            <td>{{ product.product_name }}</td>
+            <td>{{ product.location_code }}</td>
+            {% if user.is_authenticated and user.profile.grade == "GRADE3" %}
+              <td>
+                <form method="post" action="{% url 'delete_product' product.pk %}" style="display:inline;" onsubmit="return confirm('정말 이 제품을 삭제하시겠습니까?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-danger">삭제</button>
+                </form>
+              </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    {% else %}
-        {% if not query %}
-            <p class="text-muted">등록된 제품이 없습니다.</p>
-        {% endif %}
+  {% else %}
+    {% if not query %}
+      <p class="text-muted">등록된 제품이 없습니다.</p>
     {% endif %}
+  {% endif %}
 
-    {% if query %}
-        <a href="{% url 'add_product' %}?product_name={{ query }}" class="btn btn-primary mt-3">"{{ query }}" 제품 등록하기</a>
-    {% endif %}
+  {% if query %}
+    <a href="{% url 'add_product' %}?product_name={{ query }}" class="btn btn-primary mt-3">"{{ query }}" 제품 등록하기</a>
+  {% endif %}
 </div>
+
 {% endblock %}
