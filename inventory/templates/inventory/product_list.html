@@ -88,8 +88,9 @@
 
         const preferredLabel = "camera2 0, facing back";
         const preferredCamera = cameras.find(cam =>
-          cam.label.toLowerCase().includes(preferredLabel.toLowerCase())
-        );
+          cam.label.toLowerCase().includes("back")
+        ) || cameras[0];
+
         const selectedCameraId = preferredCamera ? preferredCamera.id : cameras[0].id;
         cameraSelect.value = selectedCameraId;
 
@@ -115,8 +116,9 @@
         cameraSelect.onchange = async () => {
           if (html5QrCode && html5QrCode._isScanning) {
             await html5QrCode.stop().catch(() => {});
-          }
-          scanWithCamera(cameraSelect.value);
+            await html5QrCode.clear().catch(() => {});
+        }
+        scanWithCamera(cameraSelect.value);
         };
 
         scanWithCamera(selectedCameraId);
