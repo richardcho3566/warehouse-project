@@ -17,7 +17,7 @@
 
 <!-- QR 스캔 영역 -->
 <div id="qr-reader" style="width: 300px; display: none;" class="mb-3"></div>
-<select id="camera-select" class="form-select form-select-sm mb-3" style="max-width: 300px; display: none;"></select>
+<select id="camera-select" class="form-select form-select-sm mb-3" style="max-width: 300px; display: none;" disabled></select>
 
 <form method="post" class="row g-3">
     {% csrf_token %}
@@ -31,21 +31,21 @@
     </div>
 
     <div class="col-md-3">
-      <label class="form-label">창고 위치</label>
-      <div class="d-flex align-items-center">
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="warehouse" id="warehouseA" value="A"
-             {% if form.initial.warehouse == "A" or form.data.warehouse == "A" %}checked{% endif %}>
-        <label class="form-check-label" for="warehouseA">A</label>
-      </div>
-      <div class="form-check form-check-inline ms-3">
-        <input class="form-check-input" type="radio" name="warehouse" id="warehouseB" value="B"
-             {% if form.initial.warehouse == "B" or form.data.warehouse == "B" %}checked{% endif %}>
-        <label class="form-check-label" for="warehouseB">B</label>
-      </div>
-      <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="scanLocation()">📷</button>
-      </div>
-      </div>
+        <label class="form-label">창고 위치</label>
+        <div class="d-flex align-items-center">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="warehouse" id="warehouseA" value="A"
+                    {% if form.initial.warehouse == "A" or form.data.warehouse == "A" %}checked{% endif %}>
+                <label class="form-check-label" for="warehouseA">A</label>
+            </div>
+            <div class="form-check form-check-inline ms-3">
+                <input class="form-check-input" type="radio" name="warehouse" id="warehouseB" value="B"
+                    {% if form.initial.warehouse == "B" or form.data.warehouse == "B" %}checked{% endif %}>
+                <label class="form-check-label" for="warehouseB">B</label>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="scanLocation()">📷</button>
+        </div>
+    </div>
 
     <div class="col-md-3">
         <label class="form-label">선반 번호</label>
@@ -78,7 +78,6 @@
     qrRegion.style.display = "block";
     cameraSelect.style.display = "none";
 
-    // 이전 세션 정리
     if (html5QrCode && html5QrCode._isScanning) {
       await html5QrCode.stop().catch(() => {});
     }
@@ -86,9 +85,12 @@
     html5QrCode = new Html5Qrcode("qr-reader");
 
     const cameras = await Html5Qrcode.getCameras();
-    cameraSelect.innerHTML = "";
+    const filteredCameras = cameras.filter(cam =>
+      cam.label.toLowerCase().includes("camera 0")
+    );
 
-    cameras.forEach(cam => {
+    cameraSelect.innerHTML = "";
+    (filteredCameras.length ? filteredCameras : cameras).forEach(cam => {
       const option = document.createElement("option");
       option.value = cam.id;
       option.text = cam.label || `Camera ${cam.id}`;
@@ -97,11 +99,7 @@
 
     cameraSelect.style.display = "block";
 
-    const preferredLabel = "camera2 0, facing back";
-    const preferredCamera = cameras.find(cam =>
-      cam.label.toLowerCase().includes(preferredLabel.toLowerCase())
-    );
-    const selectedCameraId = preferredCamera ? preferredCamera.id : cameras[0].id;
+    const selectedCameraId = cameraSelect.options[0].value;
     cameraSelect.value = selectedCameraId;
 
     function scanWithCamera(deviceId) {
@@ -123,13 +121,7 @@
       });
     }
 
-    cameraSelect.onchange = async () => {
-      if (html5QrCode && html5QrCode._isScanning) {
-        await html5QrCode.stop().catch(() => {});
-      }
-      scanWithCamera(cameraSelect.value);
-    };
-
+    // 강제로 첫 번째(=camera 0)로 스캔 시작
     scanWithCamera(selectedCameraId);
   }
 
@@ -139,37 +131,35 @@
     });
   }
 
-    function scanLocation() {
-        startQR(code => {
-          const parts = code.split('/');
-          if (parts.length === 4) {
-            // ✅ 창고 위치 라디오 버튼 자동 선택
-            const warehouseValue = parts[0];
-            const radio = document.querySelector(`input[name="warehouse"][value="${warehouseValue}"]`);
-            if (radio) {
-              radio.checked = true;
-            }
+  function scanLocation() {
+    startQR(code => {
+      const parts = code.split('/');
+      if (parts.length === 4) {
+        const warehouseValue = parts[0];
+        const radio = document.querySelector(`input[name="warehouse"][value="${warehouseValue}"]`);
+        if (radio) {
+          radio.checked = true;
+        }
 
-            // ✅ 나머지 입력란 채우기
-            document.getElementById("id_shelf_number").value = parts[1];
-            document.getElementById("id_column").value = parts[2];
-            document.getElementById("id_level").value = parts[3];
-          } else {
-            alert("올바른 위치코드 형식이 아닙니다. 예: A/01/B/3");
-          }
-        });
+        document.getElementById("id_shelf_number").value = parts[1];
+        document.getElementById("id_column").value = parts[2];
+        document.getElementById("id_level").value = parts[3];
+      } else {
+        alert("올바른 위치코드 형식이 아닙니다. 예: A/01/B/3");
+      }
+    });
   }
 </script>
 
 {% if form.errors %}
 <div class="alert alert-danger">
-    <ul class="mb-0">
-        {% for field in form %}
-            {% for error in field.errors %}
-                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-            {% endfor %}
-        {% endfor %}
-    </ul>
+  <ul class="mb-0">
+    {% for field in form %}
+      {% for error in field.errors %}
+        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+      {% endfor %}
+    {% endfor %}
+  </ul>
 </div>
 {% endif %}
 {% endblock %}
