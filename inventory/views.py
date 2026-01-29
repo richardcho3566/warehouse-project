@@ -90,7 +90,7 @@ def search_by_location(request):
         rest = code[3:]
 
         import re
-        match = re.match(r'^([A-Z0-9]{1,2})(\d?)$', rest)
+        match = re.match(r'^([A-Z]+)(\d+)?$', rest)
         if not match:
             column = ""
             level = ""
