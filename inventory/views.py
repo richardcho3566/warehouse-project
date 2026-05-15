@@ -17,14 +17,19 @@ from django.db.models import Q
 
 @login_required
 def product_list(request):
-    query = request.GET.get('q')
+    query = request.GET.get('q', '').strip()
     sort = request.GET.get('sort', 'product_name')
     order = request.GET.get('order', 'asc')
 
-    products = Product.objects.all()
+    if 'q' in request.GET:
+        products = Product.objects.all()
 
-    if query:
-        products = products.filter(product_name__icontains=query)
+        # 검색어가 있으면 제품명 필터
+        # 검색어가 없으면 전체목록 조회
+        if query:
+            products = products.filter(product_name__icontains=query)
+    else:
+        products = Product.objects.none()
 
     if sort == 'location_code':
         if order == 'asc':
@@ -67,14 +72,8 @@ def delete_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     product.delete()
 
-    from_page = request.GET.get('from')
-    query = request.GET.get('q', '')
-
-    if from_page == 'search':
-        return redirect(f"{reverse('search_by_location')}?q={query}")
-    else:
-        return redirect('product_list')
-
+    # 삭제 버튼을 누른 현재 화면으로 다시 돌아감
+    return redirect(request.META.get('HTTP_REFERER', reverse('product_list')))
 
 def search_by_location(request):
     query = request.GET.get('q', '').strip().upper()
