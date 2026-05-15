@@ -106,12 +106,12 @@ def search_by_location(request):
             warehouse, shelf, column, level = parsed
             filters = {
                 'warehouse__iexact': warehouse,
-                'shelf_number__istartswith': shelf,
+                'shelf_number__iexact': shelf,
             }
             if column:
-                filters['column__istartswith'] = column
+                filters['column__iexact'] = column
             if level:
-                filters['level__startswith'] = level
+                filters['level__iexact'] = level
 
             products = Product.objects.filter(**filters)
         else:
