@@ -140,7 +140,7 @@
         <thead class="table-dark">
           <tr>
             <th>
-              <a href="?{% if query %}q={{ query }}&{% endif %}sort=product_name&order={% if sort == 'product_name' and order == 'asc' %}desc{% else %}asc{% endif %}">
+              <a href="?{% if is_searched %}q={{ query }}&{% endif %}sort=product_name&order={% if sort == 'product_name' and order == 'asc' %}desc{% else %}asc{% endif %}">
                 제품명
                 {% if sort == 'product_name' %}
                   {% if order == 'asc' %}⬆️{% else %}⬇️{% endif %}

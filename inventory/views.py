@@ -45,6 +45,7 @@ def product_list(request):
         'query': query,
         'sort': sort,
         'order': order,
+        'is_searched': 'q' in request.GET,
     })
 
 
