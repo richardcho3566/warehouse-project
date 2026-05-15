@@ -180,7 +180,10 @@
     </div>
   {% else %}
     {% if not query %}
-      <p class="text-muted">등록된 제품이 없습니다.</p>
+      <p class="text-muted">검색어를 입력하고 검색하세요.<br>
+      전체 목록을 보려면 검색어 없이 검색 버튼을 누르세요.</p>
+    {% else %}
+      <p class="text-muted">검색된 제품이 없습니다.</p>
     {% endif %}
   {% endif %}
 
