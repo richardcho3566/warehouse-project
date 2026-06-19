@@ -15,7 +15,7 @@
 
     <form method="get" action="." class="row g-2 mb-3">
         <div class="col-sm-8">
-            <input type="text" id="location-input" name="q" class="form-control" placeholder="예: B0F21, B-0F-21, B/0F/2/1, B0F" value="{{ request.GET.q }}">
+            <input type="text" id="location-input" name="q" class="form-control" placeholder="예: B0F21, B0F2, B0F, B/0F/2/1" value="{{ request.GET.q }}">
         </div>
         <div class="col-sm-2">
             <button type="submit" class="btn btn-outline-success w-100">🔍</button>
@@ -27,7 +27,7 @@
     <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">HOME</a>
 
     <div class="form-text mt-2 mb-3">
-        입력 예시: <code>B0F21</code> = B창고 / 0F선반 / 2열 / 1층, <code>B0F</code> = B창고 0F선반 전체
+        입력 예시: <code>B0F21</code> = B창고 / 0F선반 / 2열 / 1층, <code>B0F2</code> = B창고 / 0F선반 / 2열 전체, <code>B0F</code> = B창고 0F선반 전체
     </div>
 
     <!-- QR 스캔 영역 -->

@@ -10,10 +10,12 @@ class LocationCode:
     """Parsed warehouse location code.
 
     Supported examples:
-    - B0F21   -> B / 0F / 2  / 1
-    - B0F101  -> B / 0F / 10 / 1
-    - B-0F-21 -> B / 0F / 2  / 1
+    - B0F21    -> B / 0F / 2  / 1
+    - B0F101   -> B / 0F / 10 / 1
+    - B0F2     -> B / 0F / 2  / all levels
+    - B-0F-21  -> B / 0F / 2  / 1
     - B/0F/2/1 -> B / 0F / 2 / 1
+    - B/0F/2   -> B / 0F / 2 / all levels
     """
 
     warehouse: str
@@ -57,6 +59,12 @@ def parse_location_code(raw_code: str | None) -> LocationCode | None:
                 column=parts[2],
                 level=parts[3],
             )
+        if len(parts) == 3:
+            return LocationCode(
+                warehouse=parts[0],
+                shelf_number=parts[1],
+                column=parts[2],
+            )
         if len(parts) == 2:
             return LocationCode(warehouse=parts[0], shelf_number=parts[1])
         return None
@@ -75,11 +83,17 @@ def parse_location_code(raw_code: str | None) -> LocationCode | None:
     if not rest:
         return LocationCode(warehouse=warehouse, shelf_number=shelf_number)
 
+    # Column-level search: B0F2 means B / 0F / 2열 전체.
+    # This is useful when the user wants every level in the same column.
+    if len(rest) == 1:
+        return LocationCode(
+            warehouse=warehouse,
+            shelf_number=shelf_number,
+            column=rest,
+        )
+
     # Exact location search: last character is level, everything before it is column.
     # This supports numeric columns such as 2/10/13 and alphabetic columns such as A/B.
-    if len(rest) < 2:
-        return None
-
     column = rest[:-1]
     level = rest[-1]
 

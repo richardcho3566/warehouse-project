@@ -124,7 +124,12 @@ def search_by_location(request):
                 filters["level__iexact"] = parsed_code.level
 
             products = Product.objects.filter(**filters).order_by("warehouse", "shelf_number", "column", "level", "product_name")
-            search_mode = "정확 위치" if parsed_code.is_exact else "선반 전체"
+            if parsed_code.is_exact:
+                search_mode = "정확 위치"
+            elif parsed_code.column:
+                search_mode = "열 전체"
+            else:
+                search_mode = "선반 전체"
         else:
             products = Product.objects.filter(product_name__icontains=query).order_by("product_name")
             search_mode = "제품명"
