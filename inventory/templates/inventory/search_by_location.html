@@ -15,7 +15,7 @@
 
     <form method="get" action="." class="row g-2 mb-3">
         <div class="col-sm-8">
-            <input type="text" id="location-input" name="q" class="form-control" placeholder="예: A12B3 or B0E2B1" value="{{ request.GET.q }}">
+            <input type="text" id="location-input" name="q" class="form-control" placeholder="예: B0F21, B-0F-21, B/0F/2/1, B0F" value="{{ request.GET.q }}">
         </div>
         <div class="col-sm-2">
             <button type="submit" class="btn btn-outline-success w-100">🔍</button>
@@ -25,6 +25,10 @@
         </div>
     </form>
     <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">HOME</a>
+
+    <div class="form-text mt-2 mb-3">
+        입력 예시: <code>B0F21</code> = B창고 / 0F선반 / 2열 / 1층, <code>B0F</code> = B창고 0F선반 전체
+    </div>
 
     <!-- QR 스캔 영역 -->
     <div id="qr-reader" style="width: 300px; display: none; margin-bottom: 1rem;"></div>
@@ -61,6 +65,10 @@
       }
     </script>
 
+    {% if query and search_mode %}
+        <p class="text-muted">검색 방식: {{ search_mode }}</p>
+    {% endif %}
+
     {% if query and not products %}
         <p class="text-muted">검색된 제품이 없습니다.</p>
     {% endif %}
@@ -72,7 +80,7 @@
                     <tr>
                         <th>제품명</th>
                         <th>위치코드</th>
-                        {% if user.is_authenticated and user.profile.grade == "GRADE3" %}
+                        {% if user.is_authenticated and user_grade == "GRADE3" %}
                             <th>삭제</th>
                         {% endif %}
                     </tr>
@@ -82,10 +90,11 @@
                     <tr>
                         <td>{{ product.product_name }}</td>
                         <td>{{ product.location_code }}</td>
-                        {% if user.is_authenticated and user.profile.grade == "GRADE3" %}
+                        {% if user.is_authenticated and user_grade == "GRADE3" %}
                         <td>
-                          <form method="post" action="{% url 'delete_product' product.pk %}?from=search&q={{ request.GET.q }}" style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                          <form method="post" action="{% url 'delete_product' product.pk %}" style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
                             {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
                             <button type="submit" class="btn btn-sm btn-danger">삭제</button>
                           </form>
                         </td>

@@ -3,7 +3,11 @@
 
 <h2 class="mb-3 fs-6">📥 CSV 파일로 제품 등록</h2>
 
-{% if user.is_authenticated and user.profile.grade == "GRADE3" %}
+<div class="alert alert-info">
+    CSV 헤더는 반드시 <code>product_name, warehouse, shelf_number, column, level</code> 순서여야 합니다.
+</div>
+
+{% if user.is_authenticated and user_grade == "GRADE3" %}
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}

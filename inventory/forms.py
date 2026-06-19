@@ -29,10 +29,19 @@ class ProductForm(forms.ModelForm):
         }
 
     def clean_product_name(self):
-        name = self.cleaned_data['product_name']
+        name = self.cleaned_data['product_name'].strip()
         if re.search(r'[a-z]', name):
             raise forms.ValidationError("소문자는 입력할 수 없습니다.")
-        return name
+        return name.upper()
+
+    def clean_shelf_number(self):
+        return self.cleaned_data['shelf_number'].strip().upper().zfill(2)
+
+    def clean_column(self):
+        return self.cleaned_data['column'].strip().upper()
+
+    def clean_level(self):
+        return str(self.cleaned_data['level']).strip().upper()
 
 
 class CSVUploadForm(forms.Form):
